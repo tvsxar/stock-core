@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS products(
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    sku TEXT NOT NULL UNIQUE CHECK (LENGTH(TRIM(sku)) > 0),
+    name TEXT NOT NULL CHECK (LENGTH(TRIM(name)) > 0)
+);
+
+CREATE TABLE IF NOT EXISTS stock_movements(
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    type TEXT NOT NULL CHECK (type IN ('IN', 'OUT')),
+    occurred_at TIMESTAMPTZ NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
