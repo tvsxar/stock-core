@@ -1,10 +1,16 @@
 import "dotenv/config";
-import { pool } from './database/db.js';
+import express from "express";
 
-try {
-    const res = await pool.query('SELECT NOW()');
+const PORT = process.env.PORT || 1011;
 
-    console.log(res.rows);
-} catch {
-    console.error('Database query error')
-}
+const app = express();
+
+app.use(express.json());
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server started on http://localhost:${PORT}`);
+});
