@@ -8,3 +8,19 @@ export async function createProduct(sku: string, name: string) {
 
   return res.rows[0];
 }
+
+export async function getProductList() {
+  const res = await pool.query(
+    `SELECT p.id, p.sku, p.name, COALESCE(
+    SUM(
+    CASE
+      WHEN sm.type = 'IN' THEN sm.quantity
+      WHEN sm.type = 'OUT' THEN -sm.quantity
+    END)::INTEGER, 0) as stock 
+    FROM products p LEFT JOIN stock_movements sm 
+    ON p.id = sm.product_id
+    GROUP BY p.id, p.sku, p.name`,
+  );
+
+  return res.rows;
+}
