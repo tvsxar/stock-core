@@ -24,3 +24,15 @@ export async function getProductList() {
 
   return res.rows;
 }
+
+export async function updateProductName(id: number, name: string) {
+  const res = await pool.query(
+    `UPDATE products
+    SET name = $1
+    WHERE id = $2
+    RETURNING id, name, sku`,
+    [name, id],
+  );
+
+  return res.rows[0];
+}
