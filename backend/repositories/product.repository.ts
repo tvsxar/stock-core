@@ -36,3 +36,29 @@ export async function updateProductName(id: number, name: string) {
 
   return res.rows[0];
 }
+
+export async function getProductById(id: number) {
+  const res = await pool.query(
+    `SELECT
+    p.id,
+    p.sku,
+    p.name,
+    COALESCE(
+        SUM(
+            CASE
+                WHEN sm.type = 'IN' THEN sm.quantity
+                WHEN sm.type = 'OUT' THEN -sm.quantity
+            END
+        )::INTEGER,
+        0
+    ) AS stock
+    FROM products p
+    LEFT JOIN stock_movements sm
+      ON p.id = sm.product_id
+    WHERE p.id = $1
+    GROUP BY p.id, p.sku, p.name`,
+    [id],
+  );
+
+  return res.rows[0];
+}

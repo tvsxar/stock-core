@@ -2,6 +2,7 @@ import {
   createProductService,
   getProductsService,
   updateProductService,
+  getProductService,
 } from "../services/product.service.js";
 import type { Request, Response } from "express";
 import { DatabaseError } from "pg";
@@ -42,11 +43,30 @@ export async function updateProductController(req: Request, res: Response) {
 
     const updatedProduct = await updateProductService(id, name);
 
-    if(!updatedProduct) return res.status(404).json({ message: "Product with this id doesn`t exist"})
+    if (!updatedProduct)
+      return res
+        .status(404)
+        .json({ message: "Product with this id doesn`t exist" });
 
     return res.status(200).json({ product: updatedProduct });
-  } catch (error) {
-    console.error(error);
+  } catch {
     return res.status(500).json({ message: "Error updating product!" });
+  }
+}
+
+export async function getProductController(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+
+    const product = await getProductService(id);
+
+    if (!product)
+      return res
+        .status(404)
+        .json({ message: "Product with this id doesn`t exist" });
+
+    return res.status(200).json({ product });
+  } catch {
+    return res.status(500).json({ message: "Error getting product!" });
   }
 }
