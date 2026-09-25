@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import productRoutes from './routes/product.routes.js';
+import movementRoutes from './routes/movement.route.js';
 
 const PORT = process.env.PORT || 1011;
 
@@ -13,6 +14,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use('/api/products', productRoutes);
+app.use('/api/products', movementRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
