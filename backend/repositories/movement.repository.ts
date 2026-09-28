@@ -1,4 +1,5 @@
 import type { PoolClient } from "pg";
+import { pool } from "../database/db.js";
 
 export async function createProductMovement(
   product_id: number,
@@ -48,4 +49,25 @@ export async function lockProduct(client: PoolClient, product_id: number) {
   );
 
   return res.rows[0];
+}
+
+export async function getProductById(product_id: number) {
+  const res = await pool.query("SELECT id FROM products WHERE id = $1", [
+    product_id,
+  ]);
+
+  return res.rows[0];
+}
+
+export async function getMovementsHistory(product_id: number) {
+  const res = await pool.query(
+    `
+    SELECT *
+    FROM stock_movements
+    WHERE product_id = $1
+    ORDER BY occurred_at DESC, id DESC`,
+    [product_id],
+  );
+
+  return res.rows;
 }

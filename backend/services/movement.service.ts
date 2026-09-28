@@ -1,6 +1,7 @@
 import {
   createProductMovement,
   getCurrentStock,
+  getMovementsHistory,
   lockProduct,
 } from "../repositories/movement.repository.js";
 import {
@@ -9,6 +10,7 @@ import {
   ProductNotFoundError,
 } from "../errors/movement.errors.js";
 import { pool } from "../database/db.js";
+import { getProductById } from "../repositories/product.repository.js";
 
 export async function createProductMovementService(
   product_id: number,
@@ -55,4 +57,14 @@ export async function createProductMovementService(
   } finally {
     client.release();
   }
+}
+
+export async function getMovementsService(product_id: number) {
+  const product = await getProductById(product_id);
+
+  if (!product) throw new ProductNotFoundError();
+
+  const movementsHistory = await getMovementsHistory(product_id);
+
+  return movementsHistory;
 }

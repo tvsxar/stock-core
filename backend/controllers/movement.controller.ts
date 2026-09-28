@@ -1,4 +1,7 @@
-import { createProductMovementService } from "../services/movement.service.js";
+import {
+  createProductMovementService,
+  getMovementsService,
+} from "../services/movement.service.js";
 import type { Request, Response } from "express";
 import {
   InvalidMovementDateError,
@@ -31,5 +34,21 @@ export async function createMovementController(req: Request, res: Response) {
     }
 
     return res.status(500).json({ message: "Error creating movement!" });
+  }
+}
+
+export async function getMovementsController(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+
+    const movements = await getMovementsService(id);
+
+    return res.status(200).json({ movements });
+  } catch (error) {
+    if (error instanceof ProductNotFoundError) {
+      return res.status(404).json({ message: error.message });
+    }
+
+    return res.status(500).json({ message: "Error getting movements!" });
   }
 }
