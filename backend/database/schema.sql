@@ -12,3 +12,6 @@ CREATE TABLE IF NOT EXISTS stock_movements(
     occurred_at TIMESTAMPTZ NOT NULL,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_stock_movements_product_id
+ON stock_movements(product_id)
