@@ -14,6 +14,6 @@ export class InsufficientStockError extends Error {
 
 export class ProductNotFoundError extends Error {
   constructor() {
-    super("Produt with this id was not found");
+    super("Product with this id was not found");
   }
 }
