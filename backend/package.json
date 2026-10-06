@@ -7,31 +7,29 @@
     "test": "vitest",
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "postinstall": "prisma skills sync || exit 0",
-    "contract:emit": "prisma contract emit"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@prisma/orm-postgres": "^8.0.0-rc.14",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "dotenv": "^18.0.5",
     "express": "^5.2.1",
     "pg": "^8.23.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@prisma/cli-engine": "^0.6.2",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
-    "prisma": "^8.0.0-rc.20",
+    "prisma": "^7.10.0",
     "supertest": "^7.3.0",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
   }
 }

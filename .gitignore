@@ -30,3 +30,6 @@ build/
 # Optional temp files
 tmp/
 temp/
+
+backend/generated/prisma/
+
