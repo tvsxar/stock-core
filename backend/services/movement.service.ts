@@ -9,7 +9,8 @@ import {
   InsufficientStockError,
   ProductNotFoundError,
 } from "../errors/movement.errors.js";
-import { pool } from "../database/db.js";
+import { prisma } from "../database/db.js";
+import { Prisma } from "../generated/prisma/client.js";
 import { getProductById } from "../repositories/product.repository.js";
 
 export async function createProductMovementService(
@@ -24,39 +25,32 @@ export async function createProductMovementService(
     throw new InvalidMovementDateError();
   }
 
-  const client = await pool.connect();
+  const movement = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const product = await lockProduct(tx, product_id);
 
-  try {
-    await client.query("BEGIN");
+      if (!product) throw new ProductNotFoundError();
 
-    const product = await lockProduct(client, product_id);
+      if (type === "OUT") {
+        const currentStock = await getCurrentStock(tx, product_id);
 
-    if (!product) throw new ProductNotFoundError();
+        if (quantity > currentStock)
+          throw new InsufficientStockError(currentStock, quantity);
+      }
 
-    if (type === "OUT") {
-      const currentStock = await getCurrentStock(client, product_id);
+      const movement = await createProductMovement(
+        product_id,
+        type,
+        quantity,
+        movementDate,
+        tx,
+      );
 
-      if (quantity > currentStock)
-        throw new InsufficientStockError(currentStock, quantity);
-    }
+      return movement;
+    },
+  );
 
-    const res = await createProductMovement(
-      product_id,
-      type,
-      quantity,
-      movementDate,
-      client,
-    );
-
-    await client.query("COMMIT");
-
-    return res;
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
+  return movement;
 }
 
 export async function getMovementsService(product_id: number) {

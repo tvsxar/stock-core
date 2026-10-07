@@ -1,27 +1,33 @@
-import type { PoolClient } from "pg";
-import { pool } from "../database/db.js";
+import { prisma } from "../database/db.js";
+import { Prisma } from "../generated/prisma/client.js";
+interface Stock {
+  stock: number;
+}
 
 export async function createProductMovement(
   product_id: number,
   type: "IN" | "OUT",
   quantity: number,
   occurred_at: Date,
-  client: PoolClient,
+  tx: Prisma.TransactionClient,
 ) {
-  const res = await client.query(
-    `INSERT INTO stock_movements (product_id, quantity, type, occurred_at)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-        `,
-    [product_id, quantity, type, occurred_at],
-  );
+  const movement = await tx.stock_movements.create({
+    data: {
+      product_id,
+      type,
+      quantity,
+      occurred_at,
+    },
+  });
 
-  return res.rows[0];
+  return movement;
 }
 
-export async function getCurrentStock(client: PoolClient, id: number) {
-  const res = await client.query(
-    `SELECT
+export async function getCurrentStock(
+  tx: Prisma.TransactionClient,
+  id: number,
+) {
+  const currentStock = await tx.$queryRaw<Stock[]>`SELECT
     COALESCE(
         SUM(
             CASE
@@ -32,42 +38,36 @@ export async function getCurrentStock(client: PoolClient, id: number) {
         0
     ) AS stock
     FROM stock_movements
-    WHERE product_id = $1`,
-    [id],
-  );
+    WHERE product_id = ${id}`;
 
-  return res.rows[0].stock;
+  return currentStock[0]!.stock;
 }
 
-export async function lockProduct(client: PoolClient, product_id: number) {
-  const res = await client.query(
-    `SELECT id
+export async function lockProduct(
+  tx: Prisma.TransactionClient,
+  product_id: number,
+) {
+  const lockedProduct = await tx.$queryRaw<{ id: number }[]>`SELECT id
     FROM products
-    WHERE id = $1
-    FOR UPDATE`,
-    [product_id],
-  );
+    WHERE id = ${product_id}
+    FOR UPDATE`;
 
-  return res.rows[0];
+  return lockedProduct[0];
 }
 
 export async function getProductById(product_id: number) {
-  const res = await pool.query("SELECT id FROM products WHERE id = $1", [
-    product_id,
-  ]);
+  const product = await prisma.products.findUnique({
+    where: { id: product_id },
+  });
 
-  return res.rows[0];
+  return product;
 }
 
 export async function getMovementsHistory(product_id: number) {
-  const res = await pool.query(
-    `
-    SELECT *
-    FROM stock_movements
-    WHERE product_id = $1
-    ORDER BY occurred_at DESC, id DESC`,
-    [product_id],
-  );
+  const movementsHistory = await prisma.stock_movements.findMany({
+    where: { product_id },
+    orderBy: [{ occurred_at: "desc" }, { id: "desc" }],
+  });
 
-  return res.rows;
+  return movementsHistory;
 }
