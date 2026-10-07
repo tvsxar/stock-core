@@ -1,17 +1,26 @@
-import { pool } from "../database/db.js";
+import { prisma } from "../database/db.js";
+interface Product {
+  id: number;
+  sku: string;
+  name: string;
+  stock: number;
+}
 
 export async function createProduct(sku: string, name: string) {
-  const res = await pool.query(
-    "INSERT INTO products (sku, name) VALUES($1, $2) RETURNING *",
-    [sku, name],
-  );
+  const product = await prisma.products.create({
+    data: {
+      sku,
+      name,
+    },
+  });
 
-  return res.rows[0];
+  return product;
 }
 
 export async function getProductList() {
-  const res = await pool.query(
-    `SELECT p.id, p.sku, p.name, COALESCE(
+  const products = await prisma.$queryRaw<
+    Product[]
+  >`SELECT p.id, p.sku, p.name, COALESCE(
     SUM(
     CASE
       WHEN sm.type = 'IN' THEN sm.quantity
@@ -19,27 +28,26 @@ export async function getProductList() {
     END)::INTEGER, 0) as stock 
     FROM products p LEFT JOIN stock_movements sm 
     ON p.id = sm.product_id
-    GROUP BY p.id, p.sku, p.name`,
-  );
+    GROUP BY p.id, p.sku, p.name`;
 
-  return res.rows;
+  return products;
 }
 
 export async function updateProductName(id: number, name: string) {
-  const res = await pool.query(
-    `UPDATE products
-    SET name = $1
-    WHERE id = $2
-    RETURNING id, name, sku`,
-    [name, id],
-  );
+  const product = await prisma.products.update({
+    where: {
+      id,
+    },
+    data: {
+      name,
+    },
+  });
 
-  return res.rows[0];
+  return product;
 }
 
 export async function getProductById(id: number) {
-  const res = await pool.query(
-    `SELECT
+  const product = await prisma.$queryRaw<Product[]>`SELECT
     p.id,
     p.sku,
     p.name,
@@ -55,10 +63,8 @@ export async function getProductById(id: number) {
     FROM products p
     LEFT JOIN stock_movements sm
       ON p.id = sm.product_id
-    WHERE p.id = $1
-    GROUP BY p.id, p.sku, p.name`,
-    [id],
-  );
+    WHERE p.id = ${id}
+    GROUP BY p.id, p.sku, p.name`;
 
-  return res.rows[0];
+  return product[0];
 }

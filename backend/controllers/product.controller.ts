@@ -5,7 +5,7 @@ import {
   getProductService,
 } from "../services/product.service.js";
 import type { Request, Response } from "express";
-import { DatabaseError } from "pg";
+import { Prisma } from "../generated/prisma/client.js";
 
 export async function createProductController(req: Request, res: Response) {
   try {
@@ -15,7 +15,10 @@ export async function createProductController(req: Request, res: Response) {
 
     return res.status(201).json({ product });
   } catch (error) {
-    if (error instanceof DatabaseError && error.code === "23505") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return res
         .status(409)
         .json({ message: "Product with this SKU already exists" });
@@ -43,13 +46,16 @@ export async function updateProductController(req: Request, res: Response) {
 
     const updatedProduct = await updateProductService(id, name);
 
-    if (!updatedProduct)
+    return res.status(200).json({ product: updatedProduct });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
       return res
         .status(404)
         .json({ message: "Product with this id doesn`t exist" });
-
-    return res.status(200).json({ product: updatedProduct });
-  } catch {
+    }
     return res.status(500).json({ message: "Error updating product!" });
   }
 }
