@@ -1,4 +1,3 @@
-import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.js";
 
@@ -17,8 +16,4 @@ const adapter = new PrismaPg({
 
 export const prisma = new PrismaClient({
   adapter,
-});
-
-export const pool = new Pool({
-  connectionString,
 });
