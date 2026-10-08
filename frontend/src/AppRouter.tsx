@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
+import ProductsPage from "./pages/ProductsPage";
 
 function AppRouter() {
     return (
@@ -8,7 +9,7 @@ function AppRouter() {
 
                 <Route path="/" element={<Navigate to="/products" replace />} />
 
-                <Route path="/products" element={<div>Products List</div>} />
+                <Route path="/products" element={<ProductsPage />} />
 
                 <Route path="/products/:id" element={<div>Product Detail</div>} />
             </Routes>
