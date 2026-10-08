@@ -1,21 +1,33 @@
 import { useState } from 'react';
-import type { Dispatch, SetStateAction } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PackagePlus, X, CircleAlert, Plus } from "lucide-react";
-import type { Product } from "../types/products";
+
+import { createProduct } from "../api/products";
 
 interface AddProductModalProps {
     closeModal: () => void;
-    products: Product[];
-    setProducts: Dispatch<SetStateAction<Product[]>>;
 }
 
-function AddProductModal({ closeModal, products, setProducts }: AddProductModalProps) {
+function AddProductModal({ closeModal }: AddProductModalProps) {
     const [newSku, setNewSku] = useState("");
     const [newName, setNewName] = useState("");
     const [formError, setFormError] = useState("");
 
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: createProduct,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+
+            closeModal();
+        }
+    });
+
     const handleAddProduct = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (mutation.isPending) return;
 
         const sku = newSku.trim();
         const name = newName.trim();
@@ -25,36 +37,14 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
             return;
         }
 
-        if (
-            products.some(
-                (product) => product.sku.toLowerCase() === sku.toLowerCase()
-            )
-        ) {
-            setFormError("A product with this SKU already exists.");
-            return;
-        }
-
-        setProducts((previous) => [
-            {
-                id: Date.now(),
-                sku,
-                name,
-                stock: 0,
-            },
-            ...previous,
-        ]);
-
-        setNewSku("");
-        setNewName("");
-        setFormError("");
-        closeModal();
+        mutation.mutate({ name, sku });
     };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-[3px]"
             onMouseDown={(event) => {
-                if (event.target === event.currentTarget) {
+                if (event.target === event.currentTarget && !mutation.isPending) {
                     closeModal();
                 }
             }}
@@ -87,6 +77,7 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
 
                     <button
                         type="button"
+                        disabled={mutation.isPending}
                         onClick={closeModal}
                         aria-label="Close modal"
                         className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
@@ -111,6 +102,7 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
                                 value={newName}
                                 onChange={(event) => {
                                     setNewName(event.target.value);
+                                    mutation.reset();
                                     setFormError("");
                                 }}
                                 placeholder="e.g. Mechanical Keyboard"
@@ -132,6 +124,7 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
                                 value={newSku}
                                 onChange={(event) => {
                                     setNewSku(event.target.value);
+                                    mutation.reset();
                                     setFormError("");
                                 }}
                                 placeholder="e.g. KB-001"
@@ -160,12 +153,19 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
                                 {formError}
                             </p>
                         )}
+
+                        {mutation.isError && (
+                            <p role="alert" className="text-sm text-rose-600">
+                                {mutation.error.message || "An error occurred while creating the product."}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
                         <button
                             type="button"
                             onClick={closeModal}
+                            disabled={mutation.isPending}
                             className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                         >
                             Cancel
@@ -173,10 +173,11 @@ function AddProductModal({ closeModal, products, setProducts }: AddProductModalP
 
                         <button
                             type="submit"
+                            disabled={mutation.isPending}
                             className="inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
                         >
                             <Plus size={16} />
-                            Create product
+                            {mutation.isPending ? "Creating..." : "Create product"}
                         </button>
                     </div>
                 </form>
