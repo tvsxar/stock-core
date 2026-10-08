@@ -1,6 +1,6 @@
-import { pool } from "../../database/db.js";
+import { prisma } from "../../database/db.js";
 
 export async function resetDb() {
-  await pool.query("DELETE FROM stock_movements");
-  await pool.query("DELETE FROM products");
+  await prisma.stock_movements.deleteMany();
+  await prisma.products.deleteMany();
 }

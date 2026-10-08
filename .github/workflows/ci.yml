@@ -25,6 +25,13 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
+      - name: Generate Prisma Client
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          TEST_PG_STRING: ${{ secrets.TEST_PG_STRING }}
+        run: npx prisma generate
+
       - name: Run backend tests
         working-directory: ./backend
         env:
