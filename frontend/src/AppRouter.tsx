@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router';
 import ProductsPage from "./pages/ProductsPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
 
 function AppRouter() {
     return (
@@ -11,7 +12,7 @@ function AppRouter() {
 
                 <Route path="/products" element={<ProductsPage />} />
 
-                <Route path="/products/:id" element={<div>Product Detail</div>} />
+                <Route path="/products/:id" element={<ProductDetailsPage />} />
             </Routes>
         </Router>
     )

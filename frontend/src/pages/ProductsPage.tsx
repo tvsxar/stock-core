@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getProducts } from "../api/products";
 
-import ProductsHeader from "../components/ProductsHeader";
-import Statistics from "../components/Statistics";
-import AddProductModal from "../components/AddProductModal";
-import ProductsTable from "../components/ProductsTable";
+import ProductsHeader from "../components/products-page/ProductsHeader";
+import Statistics from "../components/products-page/Statistics";
+import AddProductModal from "../components/products-page/AddProductModal";
+import ProductsTable from "../components/products-page/ProductsTable";
 
 import type { Product } from "../types/products";
 

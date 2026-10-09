@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PackagePlus, X, CircleAlert, Plus } from "lucide-react";
 
-import { createProduct } from "../api/products";
+import { createProduct } from "../../api/products";
 
 interface AddProductModalProps {
     closeModal: () => void;

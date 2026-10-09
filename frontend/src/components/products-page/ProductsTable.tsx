@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { useState } from "react";
 import ProductRow from "./ProductRow";
-import type { Product } from "../types/products";
+import type { Product } from "../../types/products";
 
 type ProductsTableProps = {
   products: Product[];

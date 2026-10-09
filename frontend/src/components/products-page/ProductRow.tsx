@@ -1,5 +1,5 @@
 import { ArrowRight, Package } from "lucide-react";
-import type { Product } from "../types/products";
+import type { Product } from "../../types/products";
 
 interface ProductRowProps {
     product: Product;

@@ -5,7 +5,7 @@ import {
     PackagePlus,
 } from "lucide-react";
 import StatCard from "./StatCard";
-import type { Product } from "../types/products";
+import type { Product } from "../../types/products";
 
 interface StatisticsProps {
     products: Product[];
