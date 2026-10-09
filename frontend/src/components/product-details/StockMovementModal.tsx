@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     X,
     PackagePlus,
     PackageMinus,
     CircleAlert,
 } from "lucide-react";
+import { createStockMovement } from '../../api/stockMovements';
 
 import type { Product } from "../../types/products";
 
@@ -41,6 +43,17 @@ function StockMovementModal({
 
     const Icon = config.icon;
 
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: createStockMovement,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+
+            closeModal();
+        }
+    })
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -56,16 +69,19 @@ function StockMovementModal({
             return;
         }
 
-        // TODO: createStockMovement mutation
-
-        // TODO: close after successful mutation
+        mutation.mutate({
+            id: product.id,
+            type: isReceive ? "IN" : "OUT",
+            quantity: parsedQuantity,
+            occurred_at: new Date(),
+        });
     };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-[3px]"
             onMouseDown={(event) => {
-                if (event.target === event.currentTarget) {
+                if (event.target === event.currentTarget && !mutation.isPending) {
                     closeModal();
                 }
             }}
@@ -99,6 +115,7 @@ function StockMovementModal({
                     <button
                         type="button"
                         onClick={closeModal}
+                        disabled={mutation.isPending}
                         aria-label="Close modal"
                         className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                     >
@@ -138,6 +155,7 @@ function StockMovementModal({
                                 value={quantity}
                                 onChange={(event) => {
                                     setQuantity(event.target.value);
+                                    mutation.reset();
                                     setFormError("");
                                 }}
                                 placeholder="Enter quantity"
@@ -168,11 +186,18 @@ function StockMovementModal({
                                 {formError}
                             </p>
                         )}
+
+                        {mutation.isError && (
+                            <p role="alert" className="text-sm text-rose-600">
+                                {mutation.error.message}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
                         <button
                             type="button"
+                            disabled={mutation.isPending}
                             onClick={closeModal}
                             className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                         >
@@ -181,13 +206,14 @@ function StockMovementModal({
 
                         <button
                             type="submit"
+                            disabled={mutation.isPending}
                             className={`inline-flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-colors ${type === "writeoff"
-                                    ? "bg-orange-600 hover:bg-orange-700"
-                                    : "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-orange-600 hover:bg-orange-700"
+                                : "bg-blue-600 hover:bg-blue-700"
                                 }`}
                         >
                             <Icon size={16} />
-                            {config.button}
+                            {mutation.isPending ? "Processing..." : config.button}
                         </button>
                     </div>
                 </form>

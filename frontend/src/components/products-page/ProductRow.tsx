@@ -1,4 +1,5 @@
 import { ArrowRight, Package } from "lucide-react";
+import { Link } from "react-router";
 import type { Product } from "../../types/products";
 
 interface ProductRowProps {
@@ -60,13 +61,13 @@ function ProductRow({ product, status }: ProductRowProps) {
             </td>
 
             <td className="px-6 py-4 text-right">
-                <a
-                    href={`/products/${product.id}`}
+                <Link
+                    to={`/products/${product.id}`}
                     className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-50"
                 >
                     View details
                     <ArrowRight size={15} />
-                </a>
+                </Link>
             </td>
         </tr>
     )

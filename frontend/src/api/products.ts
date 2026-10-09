@@ -34,3 +34,40 @@ export async function createProduct(product: {
 
   return data.product;
 }
+
+export async function getProductById(id: number): Promise<Product> {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/products/${id}`,
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to fetch product");
+  }
+
+  const data: { product: Product } = await response.json();
+
+  return data.product;
+}
+
+export async function updateProductName(product: {id: number, name: string}): Promise<Product> {
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/products/${product.id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: product.name }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to update product name");
+  }
+
+  const data: { product: Product } = await response.json();
+
+  return data.product;
+}

@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, X } from "lucide-react";
+
+import { updateProductName } from "../../api/products";
 import type { Product } from "../../types/products";
 
 interface EditProductModalProps {
@@ -11,24 +14,36 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
     const [name, setName] = useState(product.name);
     const [formError, setFormError] = useState("");
 
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: updateProductName,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+
+            closeModal()
+        }
+    })
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-            if (!name.trim()) {
-                setFormError("Product name is required.");
-                return;
-            }
+        if (!name.trim()) {
+            setFormError("Product name is required.");
+            return;
+        }
 
-            // TODO: updateProduct mutation
-
-        // TODO: close after successful mutation
+        mutation.mutate({
+            id: product.id,
+            name,
+        });
     };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6 backdrop-blur-[3px]"
             onMouseDown={(event) => {
-                if (event.target === event.currentTarget) {
+                if (event.target === event.currentTarget && !mutation.isPending) {
                     closeModal();
                 }
             }}
@@ -62,6 +77,7 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
                     <button
                         type="button"
                         onClick={closeModal}
+                        disabled={mutation.isPending}
                         aria-label="Close modal"
                         className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                     >
@@ -98,6 +114,7 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
                                 value={name}
                                 onChange={(event) => {
                                     setName(event.target.value);
+                                    mutation.reset();
                                     setFormError("");
                                 }}
                                 className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 outline-none transition-all focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
@@ -109,11 +126,18 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
                                 {formError}
                             </p>
                         )}
+
+                        {mutation.isError && (
+                            <p role="alert" className="text-sm text-rose-600">
+                                {mutation.error.message}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4">
                         <button
                             type="button"
+                            disabled={mutation.isPending}
                             onClick={closeModal}
                             className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
                         >
@@ -122,10 +146,11 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
 
                         <button
                             type="submit"
+                            disabled={mutation.isPending}
                             className={`inline-flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-colors bg-blue-600 hover:bg-blue-700`}
                         >
                             <Pencil size={16} />
-                            Save Changes
+                            {mutation.isPending ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </form>

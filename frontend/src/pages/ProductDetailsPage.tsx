@@ -1,50 +1,89 @@
 import { useState } from "react";
+import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+
+import { getProductById } from "../api/products";
+import { getStockMovements } from "../api/stockMovements";
 import ProductDetailsHeader from "../components/product-details/ProductDetailsHeader";
 import ProductOverview from "../components/product-details/ProductOverview";
 import StockMovementsTable from "../components/product-details/StockMovementsTable";
 import StockMovementModal from "../components/product-details/StockMovementModal";
 import EditProductModal from "../components/product-details/EditProductModal";
 import type { StockMovement, ActionType } from "../types/stockMovements";
-
-const mockProduct = {
-    id: 1,
-    sku: "MOUSE-001",
-    name: "Wireless Mouse",
-    stock: 85,
-};
-
-const mockMovements: StockMovement[] = [
-    { id: 1, type: "IN", quantity: 100, occurred_at: "2026-10-08T10:30:00Z" },
-    { id: 2, type: "OUT", quantity: 10, occurred_at: "2026-10-08T14:20:00Z" },
-    { id: 3, type: "OUT", quantity: 5, occurred_at: "2026-10-09T09:15:00Z" },
-];
+import type { Product } from "../types/products";
 
 function ProductDetailsPage() {
     const [activeModal, setActiveModal] = useState<ActionType | null>(null);
 
+    const { id } = useParams();
+    const productId = Number(id);
+
+    const isValidId = id !== undefined && Number.isInteger(productId) && productId > 0;
+
+    const product = useQuery<Product>({
+        queryKey: ["products", productId],
+        queryFn: () => getProductById(productId),
+        enabled: isValidId,
+    });
+    const movements = useQuery<StockMovement[]>({
+        queryKey: ["products", productId, "movements"],
+        queryFn: () => getStockMovements(productId),
+        enabled: isValidId,
+    })
+
     const closeModal = () => setActiveModal(null);
+
+    if (!isValidId) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <p className="text-lg font-semibold text-red-600">
+                    Invalid product ID
+                </p>
+            </div>
+        );
+    }
+
+    if (product.isError || movements.isError) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <p className="text-lg font-semibold text-red-600">
+                    Error: {(product.error || movements.error)?.message}
+                </p>
+            </div>
+        );
+    }
+
+    if (product.isPending || movements.isPending) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <p className="text-lg font-semibold text-slate-700">
+                    Loading product details...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">
             <main className="mx-auto max-w-7xl space-y-7 px-6 py-10">
                 <ProductDetailsHeader
-                    product={mockProduct}
+                    product={product.data}
                     onEdit={() => setActiveModal("edit")}
                 />
 
                 <ProductOverview
-                    product={mockProduct}
-                    movements={mockMovements}
+                    product={product.data}
+                    movements={movements.data}
                     onReceive={() => setActiveModal("receive")}
                     onWriteOff={() => setActiveModal("writeoff")}
                 />
 
-                <StockMovementsTable movements={mockMovements} />
+                <StockMovementsTable movements={movements.data} />
             </main>
 
             {activeModal === "edit" && (
                 <EditProductModal
-                    product={mockProduct}
+                    product={product.data}
                     closeModal={closeModal}
                 />
             )}
@@ -52,7 +91,7 @@ function ProductDetailsPage() {
             {(activeModal === "receive" || activeModal === "writeoff") && (
                 <StockMovementModal
                     type={activeModal}
-                    product={mockProduct}
+                    product={product.data}
                     closeModal={closeModal}
                 />
             )}
