@@ -34,8 +34,8 @@ function ProductsTable({ products }: ProductsTableProps) {
     };
   };
 
-  // TODO: search by name and/or sku
-  const displayedProducts = products;
+  const normalizedSearch = search.trim().toLowerCase();
+  const displayedProducts = products.filter(product => product.name.includes(normalizedSearch) || product.sku.includes(normalizedSearch));
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_14px_rgba(15,23,42,0.025)]">
