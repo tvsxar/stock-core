@@ -44,3 +44,7 @@ Thumbs.db
 tmp/
 temp/
 *.local
+
+# Playwright
+/frontend/test-results/
+/frontend/playwright-report/
