@@ -28,14 +28,16 @@ function EditProductModal({ product, closeModal }: EditProductModalProps) {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!name.trim()) {
+        const trimmedName = name.trim();
+
+        if (!trimmedName) {
             setFormError("Product name is required.");
             return;
         }
 
         mutation.mutate({
             id: product.id,
-            name,
+            name: trimmedName,
         });
     };
 

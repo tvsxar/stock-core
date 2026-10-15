@@ -8,8 +8,8 @@ type ProductsTableProps = {
 };
 
 function ProductsTable({ products }: ProductsTableProps) {
-    const [search, setSearch] = useState("");
-    
+  const [search, setSearch] = useState("");
+
   const getStockStatus = (stock: number) => {
     if (stock === 0) {
       return {
@@ -35,7 +35,11 @@ function ProductsTable({ products }: ProductsTableProps) {
   };
 
   const normalizedSearch = search.trim().toLowerCase();
-  const displayedProducts = products.filter(product => product.name.includes(normalizedSearch) || product.sku.includes(normalizedSearch));
+  const displayedProducts = products.filter(
+    product =>
+      product.name.toLowerCase().includes(normalizedSearch) ||
+      product.sku.toLowerCase().includes(normalizedSearch)
+  );
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_14px_rgba(15,23,42,0.025)]">
@@ -80,9 +84,8 @@ function ProductsTable({ products }: ProductsTableProps) {
                 (heading) => (
                   <th
                     key={heading}
-                    className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400 ${
-                      heading === "Action" ? "text-right" : ""
-                    }`}
+                    className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-400 ${heading === "Action" ? "text-right" : ""
+                      }`}
                   >
                     {heading}
                   </th>
@@ -96,7 +99,7 @@ function ProductsTable({ products }: ProductsTableProps) {
               const status = getStockStatus(product.stock);
 
               return (
-                <ProductRow product={product} status={status} />
+                <ProductRow key={product.id} product={product} status={status} />
               );
             })}
           </tbody>
