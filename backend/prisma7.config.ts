@@ -6,7 +6,8 @@ import { defineConfig } from "prisma/config";
 const url =
   process.env.NODE_ENV === "test"
     ? process.env.TEST_PG_STRING
-    : process.env.PG_STRING;
+    : (process.env.PG_STRING ??
+      "postgresql://placeholder:placeholder@localhost:5432/placeholder");
 
 if (!url) {
   throw new Error("The connection string is missing!");
