@@ -109,4 +109,5 @@ jobs:
         env:
           VITE_API_URL: http://localhost:1012/api
           TEST_PG_STRING: ${{ secrets.TEST_PG_STRING }}
+          DEBUG: pw:webserver
         run: npx playwright test
