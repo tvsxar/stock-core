@@ -107,7 +107,7 @@ jobs:
       - name: Run E2E tests
         working-directory: ./frontend
         env:
-          VITE_API_URL: http://localhost:1012/api
+          VITE_API_URL: http://localhost:11012/api
           TEST_PG_STRING: ${{ secrets.TEST_PG_STRING }}
           DEBUG: pw:webserver
         run: npx playwright test
