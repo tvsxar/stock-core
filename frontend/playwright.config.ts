@@ -14,7 +14,7 @@ export default defineConfig({
         {
             command: "npm run dev:e2e",
             cwd: "../backend",
-            url: "http://localhost:1012/api/health",
+            url: "http://localhost:11012/api/health",
             reuseExistingServer: false,
             timeout: 30_000,
         },
